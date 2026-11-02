@@ -1,0 +1,419 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>GoRide Taxi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+
+
+/* Layout: sticky dark header with 3 role tabs, then a framed schematic map over stacked cards. */
+:root{--bg:#f3f4f2;--card:#ffffff;--ink:#14181f;--mut:#667085;--line:#e3e6ea;--soft:#f3f5f7;
+--btn:#14181f;--btntx:#ffffff;--acc:#15803d;--red:#c62828;--hd:#14181f;--mapbg:#e8ece9;
+--gbg:#dcfce7;--gink:#166534;--rbg:#fee2e2;--rink:#991b1b;--ybg:#fef3c7;--yink:#854d0e;--ghost:#e9ecef;--ghosttx:#14181f}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1318;--card:#1a2028;--ink:#e8ecf1;--mut:#97a1ad;--line:#2b333d;--soft:#222a33;
+--btn:#e8ecf1;--btntx:#14181f;--acc:#16a34a;--red:#d93a37;--hd:#0a0d11;--mapbg:#1c2429;
+--gbg:#14341f;--gink:#86efac;--rbg:#3b1717;--rink:#fca5a5;--ybg:#3a2f12;--yink:#fcd34d;--ghost:#2b333d;--ghosttx:#e8ecf1;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1318;--card:#1a2028;--ink:#e8ecf1;--mut:#97a1ad;--line:#2b333d;--soft:#222a33;
+--btn:#e8ecf1;--btntx:#14181f;--acc:#16a34a;--red:#d93a37;--hd:#0a0d11;--mapbg:#1c2429;
+--gbg:#14341f;--gink:#86efac;--rbg:#3b1717;--rink:#fca5a5;--ybg:#3a2f12;--yink:#fcd34d;--ghost:#2b333d;--ghosttx:#e8ecf1;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Noto Sans Malayalam","Segoe UI",sans-serif;background:var(--bg);color:var(--ink);font-size:15px;padding-bottom:40px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:1200;background:var(--hd)}
+header{background:var(--hd);color:#fff;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));position:sticky;top:env(safe-area-inset-top,0px);z-index:1100}
+header h1{margin:0 0 8px;font-size:18px}
+nav{display:flex;gap:6px}
+nav button{flex:1;padding:8px;border:0;border-radius:8px;background:#2b323d;color:#fff;font-size:14px;cursor:pointer}
+nav button.on{background:#fff;color:#14181f;font-weight:600}
+.view{display:none;max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.view.on{display:block}
+.map{height:250px;width:100%;margin-top:12px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.map{background:var(--mapbg)}.map svg{display:block}
+.card{background:var(--card);margin:12px 0;padding:14px;border-radius:12px;border:1px solid var(--line);min-width:0}
+.card h3{margin:0 0 10px;font-size:16px}
+label{display:block;font-size:12px;color:var(--mut);margin:8px 0 3px}
+select,input[type=text],input[type=number]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:var(--card);color:var(--ink)}
+.btn{display:block;width:100%;padding:12px;border:0;border-radius:10px;background:var(--btn);color:var(--btntx);font-size:15px;font-weight:600;margin-top:10px;cursor:pointer}
+.btn.green{background:var(--acc);color:#fff}.btn.red{background:var(--red);color:#fff}.btn.ghost{background:var(--ghost);color:var(--ghosttx)}
+.btn:disabled{opacity:.4}
+.btn.sm{display:inline-block;width:auto;padding:6px 12px;font-size:13px;margin:0}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.row>*{min-width:0}
+.veh{display:flex;align-items:center;gap:10px;padding:10px;border:2px solid var(--line);border-radius:10px;margin-top:8px;cursor:pointer}
+.veh.on{border-color:var(--ink);background:var(--soft)}
+.veh input{display:none}.veh .e{font-size:26px}.veh .p{margin-left:auto;font-weight:700}
+.veh small{display:block;color:var(--mut);font-weight:400}
+small,.mut{color:var(--mut)}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;background:var(--ghost);color:var(--ghosttx)}
+.pill.g{background:var(--gbg);color:var(--gink)}.pill.r{background:var(--rbg);color:var(--rink)}.pill.y{background:var(--ybg);color:var(--yink)}
+.otp{font-size:32px;letter-spacing:8px;font-weight:800;text-align:center;background:var(--soft);border-radius:10px;padding:8px;margin:8px 0;font-variant-numeric:tabular-nums}
+.stars span{font-size:32px;cursor:pointer;color:var(--line)}.stars span:hover{color:#f59e0b}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid>*{min-width:0}
+.stat{background:var(--soft);border-radius:10px;padding:10px}.stat b{font-size:20px;display:block;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:6px 6px 6px 0;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.scroll{overflow-x:auto}
+.warn{background:var(--ybg);color:var(--yink);padding:10px;border-radius:8px;font-size:13px}
+.price-in{width:64px!important;padding:6px!important}
+#toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--btn);color:var(--btntx);padding:10px 16px;border-radius:99px;font-size:14px;z-index:2000;display:none;max-width:90%;text-align:center}
+</style>
+<header>
+  <h1>🚕 GoRide <small style="color:#9ca3af;font-weight:400">· demo prototype</small></h1>
+  <nav>
+    <button id="t-rider" class="on" onclick="tab('rider')">Rider</button>
+    <button id="t-driver" onclick="tab('driver')">Driver</button>
+    <button id="t-admin" onclick="tab('admin')">Admin</button>
+  </nav>
+</header>
+
+<section id="rider" class="view on">
+  <div id="map-rider" class="map"></div>
+  <div id="rider-body"></div>
+</section>
+<section id="driver" class="view">
+  <div id="map-driver" class="map"></div>
+  <div id="driver-body"></div>
+</section>
+<section id="admin" class="view"><div id="admin-body"></div></section>
+<div id="toast"></div>
+
+<script>
+/* ---------- data ---------- */
+const PLACES={
+  "Ernakulam Junction":[9.9697,76.2909],"Lulu Mall Edappally":[10.0261,76.3084],
+  "Marine Drive":[9.9816,76.2758],"Kochi Airport (CIAL)":[10.1518,76.3930],
+  "Fort Kochi":[9.9658,76.2421],"Infopark Kakkanad":[10.0102,76.3566],
+  "Vyttila Hub":[9.9672,76.3204],"Aluva Metro":[10.1099,76.3496]
+};
+const DEFAULT=()=>({
+  cfg:{surge:1,commission:20,vehicles:{
+    bike:{n:"Bike",e:"🏍️",seats:1,base:20,km:7,min:1},
+    auto:{n:"Auto",e:"🛺",seats:3,base:30,km:11,min:1},
+    mini:{n:"Mini",e:"🚗",seats:4,base:50,km:14,min:1.5},
+    sedan:{n:"Sedan",e:"🚕",seats:4,base:70,km:17,min:2},
+    suv:{n:"SUV",e:"🚙",seats:6,base:90,km:21,min:2.5}}},
+  drivers:[
+    {id:1,name:"Anil Kumar",phone:"98470 11111",vehicle:"mini",plate:"KL-07-AB-1234",docs:"approved",online:false,earn:0,trips:0},
+    {id:2,name:"Biju Thomas",phone:"98470 22222",vehicle:"sedan",plate:"KL-07-CD-5678",docs:"approved",online:false,earn:0,trips:0},
+    {id:3,name:"Shafi M",phone:"98470 33333",vehicle:"auto",plate:"KL-07-EF-9012",docs:"approved",online:false,earn:0,trips:0},
+    {id:4,name:"Rahul S",phone:"98470 44444",vehicle:"bike",plate:"KL-07-GH-3456",docs:"approved",online:false,earn:0,trips:0},
+    {id:5,name:"Joseph P",phone:"98470 55555",vehicle:"suv",plate:"KL-07-JK-7890",docs:"pending",online:false,earn:0,trips:0},
+    {id:6,name:"Suresh V",phone:"98470 66666",vehicle:"mini",plate:"KL-07-LM-2468",docs:"approved",online:false,earn:0,trips:0}],
+  rides:[],wallet:300,sos:[],
+  promos:{WELCOME20:{pct:20,max:50},SAVE10:{pct:10,max:30}}
+});
+let S;
+try{S=JSON.parse(localStorage.getItem("goride_v1"))}catch(e){}
+if(!S)S=DEFAULT();
+const save=()=>{try{localStorage.setItem("goride_v1",JSON.stringify(S))}catch(e){}};
+let D={pickup:"Ernakulam Junction",drop:"Lulu Mall Edappally",vehicle:"mini",pay:"cash",promo:"",route:null};
+let DRV=1;
+const $=s=>document.querySelector(s);
+const inr=n=>"₹"+Math.round(n);
+const hhmm=t=>new Date(t).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
+
+function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display="none",2600)}
+
+/* ---------- geo / maps ---------- */
+const kmBetween=(a,b)=>{const t=x=>x*Math.PI/180,dl=t(b[0]-a[0]),dg=t(b[1]-a[1]);
+  const h=Math.sin(dl/2)**2+Math.cos(t(a[0]))*Math.cos(t(b[0]))*Math.sin(dg/2)**2;return 12742*Math.asin(Math.sqrt(h))};
+const lerp=(a,b,p)=>[a[0]+(b[0]-a[0])*p,a[1]+(b[1]-a[1])*p];
+const pointAt=(pts,p)=>{if(pts.length<2)return pts[0];const f=p*(pts.length-1),i=Math.min(Math.floor(f),pts.length-2);return lerp(pts[i],pts[i+1],f-i)};
+const rc={};
+async function getRoute(a,b){
+  const k=a+"|"+b;if(rc[k])return rc[k];
+  const d=kmBetween(a,b)*1.3;
+  return rc[k]={dist:d,dur:d/25*60,pts:[a,b]};
+}
+const maps={};
+const PJ=c=>[(c[1]-76.32)*1000+200,(10.055-c[0])*1000+125];
+const LEFT=["Ernakulam Junction","Marine Drive","Fort Kochi"];
+function mkMap(id){maps[id]={el:document.getElementById(id),k:1,car:false};draw(id)}
+function carMark(M,pos){
+  const t=M.el.querySelector(".car");if(!t||!pos)return;
+  const p=PJ(pos);t.setAttribute("x",p[0].toFixed(1));t.setAttribute("y",(p[1]+7*M.k).toFixed(1));
+}
+function draw(id,pc,dc,pts,car){
+  const M=maps[id];if(!M)return;
+  let vb=[0,0,400,250],k=1;
+  if(pts&&pts.length){
+    const P=pts.map(PJ),xs=P.map(p=>p[0]),ys=P.map(p=>p[1]);
+    const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+    let w=Math.max((x1-x0)*1.7,110),h=w*.625;
+    if((y1-y0)*1.7>h){h=(y1-y0)*1.7;w=h*1.6}
+    vb=[(x0+x1)/2-w/2,(y0+y1)/2-h/2,w,h];k=w/400;
+  }
+  M.k=k;M.car=!!car;
+  const f=n=>+(n*k).toFixed(2);
+  let s=`<svg viewBox="${vb.map(v=>+v.toFixed(1)).join(" ")}" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Route map">
+  <defs><pattern id="${id}-g" width="${f(25)}" height="${f(25)}" patternUnits="userSpaceOnUse"><path d="M ${f(25)} 0 L 0 0 0 ${f(25)}" fill="none" stroke="var(--line)" stroke-width="${f(.7)}"/></pattern></defs>
+  <rect x="-3000" y="-3000" width="7000" height="7000" fill="var(--mapbg)"/><rect x="-3000" y="-3000" width="7000" height="7000" fill="url(#${id}-g)"/>`;
+  Object.entries(PLACES).forEach(([n,c])=>{
+    const p=PJ(c),l=LEFT.includes(n);
+    s+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${f(3.5)}" fill="var(--mut)"/>
+    <text x="${(p[0]+(l?-1:1)*f(6)).toFixed(1)}" y="${(p[1]+f(3)).toFixed(1)}" text-anchor="${l?"end":"start"}" font-size="${f(9)}" fill="var(--mut)">${n}</text>`;
+  });
+  if(pts&&pts.length){
+    s+=`<polyline points="${pts.map(q=>PJ(q).map(v=>v.toFixed(1)).join(",")).join(" ")}" fill="none" stroke="#2563eb" stroke-width="${f(3.5)}" stroke-dasharray="${f(2)} ${f(7)}" stroke-linecap="round"/>`;
+    [[pc,"#16a34a","Pickup"],[dc,"#dc2626","Drop"]].forEach(([c,col,t])=>{
+      const p=PJ(c);
+      s+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${f(7)}" fill="${col}" stroke="var(--card)" stroke-width="${f(2)}"/>
+      <text x="${p[0].toFixed(1)}" y="${(p[1]-f(11)).toFixed(1)}" text-anchor="middle" font-size="${f(10)}" font-weight="700" fill="var(--ink)">${t}</text>`;
+    });
+  }
+  if(car){const p=PJ(car);s+=`<text class="car" x="${p[0].toFixed(1)}" y="${(p[1]+f(7)).toFixed(1)}" text-anchor="middle" font-size="${f(22)}">🚕</text>`}
+  M.el.innerHTML=s+"</svg>";
+}
+
+/* ---------- business logic ---------- */
+const fare=(v,dist,dur)=>{const x=S.cfg.vehicles[v];return Math.round((x.base+x.km*dist+x.min*dur)*S.cfg.surge)};
+const discount=(f)=>{const p=S.promos[D.promo];return p?Math.min(Math.round(f*p.pct/100),p.max):0};
+const activeRide=()=>S.rides.find(r=>["searching","accepted","arrived","ongoing"].includes(r.status)||(r.status==="completed"&&!r.ack));
+const driverRide=id=>S.rides.find(r=>r.driverId===id&&["accepted","arrived","ongoing"].includes(r.status));
+const drv=id=>S.drivers.find(d=>d.id===id);
+const avgRating=id=>{const rs=S.rides.filter(r=>r.driverId===id&&r.rating).map(r=>r.rating);return rs.length?(rs.reduce((a,b)=>a+b,0)/rs.length).toFixed(1):"New"};
+
+function setD(k,v){D[k]=v;if(D.pickup===D.drop&&(k==="pickup"||k==="drop")){toast("Pickup & drop വ്യത്യസ്തമായിരിക്കണം");}renderRider()}
+function applyPromo(){
+  const c=$("#promo").value.trim().toUpperCase();
+  if(!c){D.promo="";}else if(S.promos[c]){D.promo=c;toast("Promo applied: "+c)}else{D.promo="";toast("Invalid promo code")}
+  renderRider();
+}
+function book(){
+  if(!D.route||D.pickup===D.drop)return toast("Locations പരിശോധിക്കൂ");
+  const rt=D.route,f=fare(D.vehicle,rt.dist,rt.dur),disc=discount(f),total=f-disc;
+  if(D.pay==="wallet"&&S.wallet<total)return toast("Wallet balance കുറവാണ്");
+  S.rides.unshift({id:"R"+(1001+S.rides.length),pickup:D.pickup,drop:D.drop,pc:PLACES[D.pickup],dc:PLACES[D.drop],
+    vehicle:D.vehicle,dist:rt.dist,dur:rt.dur,pts:rt.pts,fare:f,disc,total,pay:D.pay,promo:D.promo,
+    status:"searching",otp:String(1000+Math.floor(Math.random()*9000)),t:Date.now(),rej:[],prog:0});
+  save();renderAll();
+}
+function acceptRide(rid,did){
+  const r=S.rides.find(x=>x.id===rid);if(!r||r.status!=="searching")return toast("Ride ഇപ്പോൾ ലഭ്യമല്ല");
+  r.status="accepted";r.driverId=did;r.prog=0;
+  r.start=[r.pc[0]+(Math.random()-.5)*.03,r.pc[1]+(Math.random()-.5)*.03];r.pos=r.start;
+  save();renderAll();
+}
+function demoAccept(){
+  const r=activeRide();
+  const c=S.drivers.filter(d=>d.docs==="approved"&&d.online&&d.vehicle===r.vehicle&&!driverRide(d.id));
+  if(!c.length)return toast("Online driver ഇല്ല — Driver tab-ൽ online ആക്കൂ ("+S.cfg.vehicles[r.vehicle].n+")");
+  acceptRide(r.id,c[0].id);
+}
+function rejectRide(rid,did){const r=S.rides.find(x=>x.id===rid);r.rej.push(did);save();renderAll()}
+function cancelRide(rid){const r=S.rides.find(x=>x.id===rid);r.status="cancelled";r.ack=true;save();renderAll();toast("Ride cancelled")}
+function arrived(rid){S.rides.find(x=>x.id===rid).status="arrived";save();renderAll()}
+function startTrip(rid){
+  const r=S.rides.find(x=>x.id===rid);
+  if($("#otp-in").value.trim()!==r.otp)return toast("OTP തെറ്റാണ്");
+  r.status="ongoing";r.prog=0;r.pos=r.pts[0];r.startT=Date.now();save();renderAll();
+}
+function endTrip(rid){
+  const r=S.rides.find(x=>x.id===rid),d=drv(r.driverId);
+  r.status="completed";r.endT=Date.now();r.comm=Math.round(r.total*S.cfg.commission/100);
+  d.earn+=r.total-r.comm;d.trips++;
+  if(r.pay==="wallet")S.wallet-=r.total;
+  save();renderAll();toast("Trip complete · നിങ്ങൾ നേടിയത് "+inr(r.total-r.comm));
+}
+function rate(rid,n){const r=S.rides.find(x=>x.id===rid);r.rating=n;r.ack=true;save();renderAll();toast("നന്ദി! Rating: "+n+"★")}
+function skipRate(rid){S.rides.find(x=>x.id===rid).ack=true;save();renderAll()}
+function sos(rid){S.sos.unshift({t:Date.now(),ride:rid});save();toast("🚨 SOS control room-ലേക്കും emergency contact-ലേക്കും അയച്ചു");renderAdmin()}
+function shareTrip(rid){
+  const txt="ഞാൻ GoRide-ൽ യാത്ര ചെയ്യുന്നു. Ride ID: "+rid;
+  try{navigator.clipboard.writeText(txt).then(()=>toast("Trip details copy ചെയ്തു")).catch(()=>toast(txt))}catch(e){toast(txt)}
+}
+function toggleOnline(){const d=drv(DRV);d.online=!d.online;save();renderAll()}
+function topup(){S.wallet+=100;save();renderRider();toast("Wallet-ൽ ₹100 ചേർത്തു")}
+
+/* ---------- rider UI ---------- */
+const placeOpts=sel=>Object.keys(PLACES).map(p=>`<option ${p===sel?"selected":""}>${p}</option>`).join("");
+
+async function renderRider(){
+  const r=activeRide(),el=$("#rider-body");
+  if(!r){
+    el.innerHTML=`
+    <div class="card"><h3>Book a ride · യാത്ര ബുക്ക് ചെയ്യൂ</h3>
+      <label>Pickup</label><select onchange="setD('pickup',this.value)">${placeOpts(D.pickup)}</select>
+      <label>Drop</label><select onchange="setD('drop',this.value)">${placeOpts(D.drop)}</select>
+    </div>
+    <div id="quotes" class="card"><span class="mut">Fares calculate ചെയ്യുന്നു…</span></div>
+    ${historyCard()}`;
+    if(D.pickup===D.drop){$("#quotes").innerHTML='<span class="mut">വ്യത്യസ്ത pickup / drop തിരഞ്ഞെടുക്കൂ</span>';draw("map-rider");return}
+    const a=PLACES[D.pickup],b=PLACES[D.drop];
+    const key=D.pickup+D.drop;D.key=key;
+    const rt=await getRoute(a,b);
+    if(D.key!==key||!$("#quotes"))return;
+    D.route=rt;draw("map-rider",a,b,rt.pts);
+    const f0=fare(D.vehicle,rt.dist,rt.dur),disc=discount(f0);
+    $("#quotes").innerHTML=`
+      <h3>Choose a ride <small>${rt.dist.toFixed(1)} km · ~${Math.round(rt.dur)} min</small></h3>
+      ${Object.entries(S.cfg.vehicles).map(([k,v])=>`
+        <label class="veh ${D.vehicle===k?"on":""}"><input type="radio" name="veh" onchange="setD('vehicle','${k}')">
+          <span class="e">${v.e}</span><span><b>${v.n}</b><small>${v.seats} seats · ${2+Math.abs(k.length*3%6)} min away</small></span>
+          <span class="p">${inr(fare(k,rt.dist,rt.dur))}</span></label>`).join("")}
+      ${S.cfg.surge>1?`<p class="warn">⚡ Surge pricing ×${S.cfg.surge} ബാധകമാണ്</p>`:""}
+      <label>Promo code</label>
+      <div class="row"><input type="text" id="promo" placeholder="WELCOME20" value="${D.promo}"><button class="btn sm" onclick="applyPromo()">Apply</button></div>
+      <label>Payment</label>
+      <select onchange="D.pay=this.value;renderRider()">
+        ${["cash","upi","card","wallet"].map(p=>`<option value="${p}" ${D.pay===p?"selected":""}>${{cash:"Cash",upi:"UPI",card:"Card",wallet:"Wallet (₹"+S.wallet+")"}[p]}</option>`).join("")}
+      </select>
+      ${D.pay==="wallet"?`<button class="btn sm ghost" style="margin-top:6px" onclick="topup()">+ ₹100 add</button>`:""}
+      <div class="row" style="margin-top:12px"><span>Total</span><b style="font-size:20px">${disc?`<s class="mut" style="font-size:14px">${inr(f0)}</s> `:""}${inr(f0-disc)}</b></div>
+      <button class="btn green" onclick="book()">Book ${S.cfg.vehicles[D.vehicle].n}</button>`;
+    return;
+  }
+  const d=r.driverId?drv(r.driverId):null,v=S.cfg.vehicles[r.vehicle];
+  draw("map-rider",r.pc,r.dc,r.pts,r.status==="accepted"||r.status==="arrived"||r.status==="ongoing"?r.pos:null);
+  let h=`<div class="card"><div class="row"><b>${r.pickup} → ${r.drop}</b><span class="pill">${r.id}</span></div>
+    <small>${v.e} ${v.n} · ${r.dist.toFixed(1)} km · ${inr(r.total)} · ${r.pay.toUpperCase()}</small></div>`;
+  if(r.status==="searching"){
+    h+=`<div class="card" style="text-align:center"><h3>🔍 Driver-നെ തിരയുന്നു…</h3>
+      <p class="mut">Driver tab-ൽ ഒരു ${v.n} driver online ആക്കി request accept ചെയ്യൂ.</p>
+      <button class="btn ghost" onclick="demoAccept()">Demo: nearest driver accept ചെയ്യട്ടെ</button>
+      <button class="btn red" onclick="cancelRide('${r.id}')">Cancel ride</button></div>`;
+  }else if(r.status==="completed"){
+    h+=`<div class="card"><h3>✅ Trip completed</h3>
+      <div class="row"><span>Fare</span><span>${inr(r.fare)}</span></div>
+      ${r.disc?`<div class="row"><span>Promo (${r.promo})</span><span>-${inr(r.disc)}</span></div>`:""}
+      <div class="row"><b>Paid via ${r.pay.toUpperCase()}</b><b>${inr(r.total)}</b></div>
+      <p style="margin-bottom:0">${d.name} നെ rate ചെയ്യൂ</p>
+      <div class="stars" style="text-align:center">${[1,2,3,4,5].map(n=>`<span onclick="rate('${r.id}',${n})">★</span>`).join("")}</div>
+      <button class="btn ghost" onclick="skipRate('${r.id}')">Skip</button></div>`;
+  }else{
+    const msg={accepted:"Driver വരുന്നു",arrived:"Driver എത്തി — OTP പറയൂ",ongoing:"Trip നടക്കുന്നു"}[r.status];
+    const eta=r.status==="ongoing"?Math.ceil((1-r.prog)*r.dur):Math.max(1,Math.ceil((1-r.prog)*5));
+    h+=`<div class="card"><div class="row"><h3 style="margin:0">${msg}</h3><span class="pill g"><span id="eta">${r.status==="arrived"?0:eta}</span> min</span></div>
+      <div class="row" style="margin-top:8px"><div><b>${d.name}</b> ⭐ ${avgRating(d.id)}<br><small>${v.n} · ${d.plate}</small></div>
+      <div><button class="btn sm ghost" onclick="toast('📞 Masked call connecting…')">Call</button> <button class="btn sm ghost" onclick="toast('💬 In-app chat')">Chat</button></div></div>
+      ${r.status!=="ongoing"?`<div class="otp">${r.otp}</div><small>ട്രിപ്പ് തുടങ്ങാൻ ഈ OTP driver-നോട് പറയൂ</small>`:""}
+      <div class="grid" style="margin-top:10px"><button class="btn ghost" style="margin:0" onclick="shareTrip('${r.id}')">Share trip</button>
+      <button class="btn red" style="margin:0" onclick="sos('${r.id}')">🚨 SOS</button></div>
+      ${r.status!=="ongoing"?`<button class="btn ghost" onclick="cancelRide('${r.id}')">Cancel ride</button>`:""}</div>`;
+  }
+  el.innerHTML=h;
+}
+function historyCard(){
+  const hs=S.rides.filter(r=>r.status==="completed"||r.status==="cancelled").slice(0,5);
+  if(!hs.length)return"";
+  return`<div class="card"><h3>Ride history</h3>${hs.map(r=>`<div class="row" style="padding:6px 0;border-bottom:1px solid var(--line)">
+    <div><b>${r.pickup} → ${r.drop}</b><br><small>${hhmm(r.t)} · ${r.status}${r.rating?" · "+r.rating+"★":""}</small></div><b>${r.status==="completed"?inr(r.total):"-"}</b></div>`).join("")}</div>`;
+}
+
+/* ---------- driver UI ---------- */
+function renderDriver(){
+  const d=drv(DRV),my=driverRide(d.id),v=S.cfg.vehicles[d.vehicle];
+  let h=`<div class="card"><label style="margin-top:0">Logged in as</label>
+    <select onchange="DRV=+this.value;renderDriver()">${S.drivers.map(x=>`<option value="${x.id}" ${x.id===DRV?"selected":""}>${x.name} (${S.cfg.vehicles[x.vehicle].n})</option>`).join("")}</select>
+    <div class="row" style="margin-top:10px"><div><b>${d.name}</b><br><small>${v.e} ${v.n} · ${d.plate}</small></div>
+    <span class="pill ${d.docs==="approved"?"g":d.docs==="pending"?"y":"r"}">Docs: ${d.docs}</span></div>
+    ${d.docs!=="approved"?`<p class="warn">Documents admin approve ചെയ്യുന്നത് വരെ online ആകാൻ കഴിയില്ല.</p>`
+      :`<button class="btn ${d.online?"red":"green"}" onclick="toggleOnline()">${d.online?"Go Offline":"Go Online"}</button>`}
+    </div>
+    <div class="card"><h3>Earnings</h3><div class="grid">
+      <div class="stat"><b>${inr(d.earn)}</b><small>Total earned</small></div>
+      <div class="stat"><b>${d.trips}</b><small>Trips · ⭐ ${avgRating(d.id)}</small></div></div></div>`;
+  if(my){
+    draw("map-driver",my.pc,my.dc,my.pts,my.pos);
+    const done=my.prog>=1;
+    h+=`<div class="card"><div class="row"><h3 style="margin:0">Current trip</h3><span class="pill">${my.id}</span></div>
+      <p><b>${my.pickup}</b> → <b>${my.drop}</b><br><small>${my.dist.toFixed(1)} km · ${inr(my.total)} · ${my.pay.toUpperCase()}</small></p>`;
+    if(my.status==="accepted")h+=`<p class="mut">Pickup-ലേക്ക് navigate ചെയ്യുന്നു… ETA <span id="eta">${Math.max(1,Math.ceil((1-my.prog)*5))}</span> min</p>
+      <button class="btn green" onclick="arrived('${my.id}')">I've arrived</button>`;
+    if(my.status==="arrived")h+=`<label>Rider-ന്റെ OTP</label><input type="text" id="otp-in" inputmode="numeric" maxlength="4" placeholder="4-digit OTP">
+      <small>Demo OTP: ${my.otp}</small><button class="btn green" onclick="startTrip('${my.id}')">Start trip</button>`;
+    if(my.status==="ongoing")h+=`<p class="mut">ETA <span id="eta">${Math.ceil((1-my.prog)*my.dur)}</span> min</p>
+      <button class="btn red" id="end-btn" ${done?"":"disabled"} onclick="endTrip('${my.id}')">${done?"End trip & collect "+inr(my.total):"Trip നടക്കുന്നു…"}</button>`;
+    h+=`</div>`;
+  }else if(d.online){
+    const reqs=S.rides.filter(r=>r.status==="searching"&&r.vehicle===d.vehicle&&!r.rej.includes(d.id));
+    if(reqs.length)draw("map-driver",reqs[0].pc,reqs[0].dc,reqs[0].pts);else draw("map-driver");
+    h+=`<div class="card"><h3>Ride requests</h3>${reqs.length?reqs.map(r=>`
+      <div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>${r.pickup} → ${r.drop}</b><br>
+      <small>${r.dist.toFixed(1)} km · ${hhmm(r.t)} · ${r.pay.toUpperCase()}</small>
+      <div class="row" style="margin-top:6px"><b style="font-size:18px">${inr(r.total)}</b><div>
+      <button class="btn sm ghost" onclick="rejectRide('${r.id}',${d.id})">Reject</button>
+      <button class="btn sm green" onclick="acceptRide('${r.id}',${d.id})">Accept</button></div></div></div>`).join("")
+      :`<p class="mut">പുതിയ request-കൾ കാത്തിരിക്കുന്നു… Rider tab-ൽ ഒരു ${v.n} ബുക്ക് ചെയ്യൂ.</p>`}</div>`;
+  }else{
+    draw("map-driver");
+    h+=`<div class="card"><p class="mut" style="margin:0">നിങ്ങൾ offline ആണ്. Requests കിട്ടാൻ Go Online അമർത്തൂ.</p></div>`;
+  }
+  const hs=S.rides.filter(r=>r.driverId===d.id&&r.status==="completed").slice(0,5);
+  if(hs.length)h+=`<div class="card"><h3>Trip history</h3>${hs.map(r=>`<div class="row" style="padding:5px 0"><small>${r.pickup} → ${r.drop}</small><b>${inr(r.total-r.comm)}</b></div>`).join("")}</div>`;
+  $("#driver-body").innerHTML=h;
+}
+
+/* ---------- admin UI ---------- */
+function setCfg(k,f,val){S.cfg.vehicles[k][f]=+val;save()}
+function setGlobal(k,val){S.cfg[k]=+val;save();renderRider()}
+function setDocs(id,st){const d=drv(id);d.docs=st;if(st!=="approved")d.online=false;save();renderAll()}
+function addPromo(){
+  const c=($("#np-c").value||"").trim().toUpperCase(),p=+$("#np-p").value,m=+$("#np-m").value;
+  if(!c||!p)return toast("Code & % കൊടുക്കൂ");
+  S.promos[c]={pct:p,max:m||50};save();renderAdmin();
+}
+function delPromo(c){delete S.promos[c];save();renderAdmin()}
+let resetArm=false;
+function resetAll(){
+  const b=$("#reset-btn");
+  if(!resetArm){resetArm=true;b.textContent="Tap again to confirm reset";setTimeout(()=>{resetArm=false;const x=$("#reset-btn");if(x)x.textContent="Reset demo data"},4000);return}
+  resetArm=false;try{localStorage.removeItem("goride_v1")}catch(e){}
+  S=DEFAULT();D.route=null;save();renderAll();toast("Demo data reset ചെയ്തു");
+}
+function renderAdmin(){
+  const done=S.rides.filter(r=>r.status==="completed"),rev=done.reduce((a,r)=>a+r.total,0),com=done.reduce((a,r)=>a+(r.comm||0),0);
+  $("#admin-body").innerHTML=`
+  <div class="card"><h3>Dashboard</h3><div class="grid">
+    <div class="stat"><b>${S.rides.length}</b><small>Total rides</small></div>
+    <div class="stat"><b>${done.length}</b><small>Completed</small></div>
+    <div class="stat"><b>${inr(rev)}</b><small>Gross revenue</small></div>
+    <div class="stat"><b>${inr(com)}</b><small>Commission (${S.cfg.commission}%)</small></div>
+    <div class="stat"><b>${S.drivers.filter(d=>d.online).length}/${S.drivers.length}</b><small>Drivers online</small></div>
+    <div class="stat"><b>${S.rides.filter(r=>["accepted","arrived","ongoing"].includes(r.status)).length}</b><small>Live rides</small></div></div></div>
+  <div class="card"><h3>Driver management</h3><div class="scroll"><table><tr><th>Name</th><th>Vehicle</th><th>Docs</th><th>Trips</th><th></th></tr>
+    ${S.drivers.map(d=>`<tr><td>${d.name}${d.online?" 🟢":""}</td><td>${S.cfg.vehicles[d.vehicle].n}</td>
+    <td><span class="pill ${d.docs==="approved"?"g":d.docs==="pending"?"y":"r"}">${d.docs}</span></td><td>${d.trips}</td>
+    <td>${d.docs!=="approved"?`<button class="btn sm green" onclick="setDocs(${d.id},'approved')">Approve</button>`:`<button class="btn sm red" onclick="setDocs(${d.id},'blocked')">Block</button>`}</td></tr>`).join("")}</table></div></div>
+  <div class="card"><h3>Pricing</h3><div class="scroll"><table><tr><th>Type</th><th>Base ₹</th><th>₹/km</th><th>₹/min</th></tr>
+    ${Object.entries(S.cfg.vehicles).map(([k,v])=>`<tr><td>${v.e} ${v.n}</td>
+    ${["base","km","min"].map(f=>`<td><input class="price-in" type="number" step="0.5" value="${v[f]}" onchange="setCfg('${k}','${f}',this.value)"></td>`).join("")}</tr>`).join("")}</table></div>
+    <div class="grid"><div><label>Surge multiplier</label><input type="number" step="0.1" min="1" value="${S.cfg.surge}" onchange="setGlobal('surge',this.value)"></div>
+    <div><label>Commission %</label><input type="number" min="0" max="50" value="${S.cfg.commission}" onchange="setGlobal('commission',this.value)"></div></div></div>
+  <div class="card"><h3>Promo codes</h3>${Object.entries(S.promos).map(([c,p])=>`<div class="row" style="padding:4px 0"><span><b>${c}</b> · ${p.pct}% (max ₹${p.max})</span><button class="btn sm ghost" onclick="delPromo('${c}')">Delete</button></div>`).join("")}
+    <div class="grid" style="margin-top:8px"><input type="text" id="np-c" placeholder="CODE"><input type="number" id="np-p" placeholder="% off"><input type="number" id="np-m" placeholder="Max ₹"><button class="btn sm" onclick="addPromo()">Add</button></div></div>
+  <div class="card"><h3>Live & recent rides</h3><div class="scroll"><table><tr><th>ID</th><th>Route</th><th>Fare</th><th>Driver</th><th>Status</th></tr>
+    ${S.rides.slice(0,10).map(r=>`<tr><td>${r.id}</td><td>${r.pickup} → ${r.drop}</td><td>${inr(r.total)}</td><td>${r.driverId?drv(r.driverId).name:"-"}</td><td>${r.status}</td></tr>`).join("")||'<tr><td colspan="5" class="mut">ഇതുവരെ rides ഇല്ല</td></tr>'}</table></div></div>
+  <div class="card"><h3>🚨 SOS alerts</h3>${S.sos.length?S.sos.map(s=>`<div class="row" style="padding:4px 0"><span>Ride ${s.ride}</span><small>${hhmm(s.t)}</small></div>`).join(""):'<span class="mut">alerts ഇല്ല</span>'}</div>
+  <div class="card"><button class="btn red" id="reset-btn" onclick="resetAll()">Reset demo data</button></div>`;
+}
+
+/* ---------- shell ---------- */
+function renderAll(){renderRider();renderDriver();renderAdmin()}
+function tab(t){
+  ["rider","driver","admin"].forEach(x=>{$("#"+x).classList.toggle("on",x===t);$("#t-"+x).classList.toggle("on",x===t)});
+  if(t==="admin")renderAdmin();
+  if(t==="driver")renderDriver();
+  if(t==="rider")renderRider();
+  window.scrollTo(0,0);
+}
+setInterval(()=>{
+  let moved=false,reached=false;
+  S.rides.forEach(r=>{
+    if(r.status==="accepted"&&r.prog<1){r.prog=Math.min(1,r.prog+.07);r.pos=lerp(r.start,r.pc,r.prog);moved=true}
+    else if(r.status==="ongoing"&&r.prog<1){r.prog=Math.min(1,r.prog+.035);r.pos=pointAt(r.pts,r.prog);moved=true;if(r.prog>=1)reached=true}
+  });
+  if(!moved)return;
+  S.rides.filter(r=>["accepted","ongoing"].includes(r.status)).forEach(r=>{
+    Object.values(maps).forEach(M=>{if(M.car)carMark(M,r.pos)});
+    const e=document.querySelectorAll("#eta");
+    const t=r.status==="ongoing"?Math.ceil((1-r.prog)*r.dur):Math.max(1,Math.ceil((1-r.prog)*5));
+    e.forEach(x=>x.textContent=t);
+  });
+  if(reached){save();renderDriver()}
+},700);
+
+mkMap("map-rider");mkMap("map-driver");
+renderAll();
+</script>
+
+</body></html>
